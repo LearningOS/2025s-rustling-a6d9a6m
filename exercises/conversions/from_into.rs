@@ -44,6 +44,17 @@ impl Default for Person {
 
 impl From<&str> for Person {
     fn from(s: &str) -> Person {
+        let v = s.split(',').collect::<Vec<&str>>();
+        Person{
+            name: v.get(0)
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(||Person::default().name),
+
+            age: v.get(1)
+                .and_then(|s| s.trim()..ok())
+                .unwrap_or_else(||Person::default().age),
+        }
     }
 }
 
