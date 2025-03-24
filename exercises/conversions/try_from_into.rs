@@ -41,6 +41,9 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        if tuple.0>0 && tuple.1 >0 && tuple.2 >0 &&tuple.0 <256 && tuple.1 <256 && tuple.2 <256 {
+            Some(Color{red: tuple.0, green: tuple.1, blue: tuple.2})
+        }else{Err(IntoColorError::IntConversion)}
     }
 }
 
