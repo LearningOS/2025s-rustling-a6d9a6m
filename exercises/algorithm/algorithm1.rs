@@ -2,11 +2,9 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -69,15 +67,94 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	pub fn merge(mut list_a:LinkedList<T>,mut list_b:LinkedList<T>)-> Self
+    where
+        T: PartialOrd,
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut ans = LinkedList::new();
+        // 夺取节点所有权，避免共享
+        let mut a_node = list_a.start.take();
+        let mut b_node = list_b.start.take();
+        ans.length = list_a.length + list_b.length;
+        // 处理头节点初始化
+        let head = match (a_node, b_node) {
+            (Some(a), Some(b)) => {
+                if unsafe { a.as_ref().val <= b.as_ref().val } {
+                    a_node = unsafe { a.as_ref().next };
+                    Some(a)
+                } else {
+                    b_node = unsafe { b.as_ref().next };
+                    Some(b)
+                }
+            }
+            (Some(a), None) => {
+                a_node = unsafe { a.as_ref().next };
+                Some(a)
+            }
+            (None, Some(b)) => {
+                b_node = unsafe { b.as_ref().next };
+                Some(b)
+            }
+            (None, None) => None,
+        };
+
+        let mut tail = head;
+        // 更新新链表的头尾指针
+        ans.start = head;
+        if let Some(t) = tail {
+            ans.end = Some(t);
         }
+
+        // 合并剩余节点
+        while let (Some(a), Some(b)) = (a_node, b_node) {
+            let next = if unsafe { a.as_ref().val <= b.as_ref().val } {
+                a_node = unsafe { a.as_ref().next };
+                Some(a)
+            } else {
+                b_node = unsafe { b.as_ref().next };
+                Some(b)
+            };
+
+            unsafe {
+                if let Some(t) = tail {
+                    t.as_ptr().as_mut().unwrap().next = next;
+                }
+                tail = next;
+                ans.end = next;
+            }
+        }
+
+        // 处理剩余节点
+        let remaining = if a_node.is_some() {
+            ans.end = list_a.end.take();
+            a_node
+        }else {
+            ans.end = list_b.end.take();
+            b_node
+        };
+        if let Some(r) = remaining {
+            unsafe {
+                if let Some(t) = tail {
+                    t.as_ptr().as_mut().unwrap().next = Some(r);
+                } else {
+                    ans.start = Some(r);
+                }
+            }
+        }
+
+        ans.length = list_a.length + list_b.length;
+        ans
 	}
+    fn find_tail(mut node: Option<NonNull<Node<T>>>) -> Option<NonNull<Node<T>>> {
+        let mut tail = None;
+        while let Some(n) = node {
+            unsafe {
+                tail = Some(n);
+                node = n.as_ref().next;
+            }
+        }
+        tail
+    }
 }
 
 impl<T> Display for LinkedList<T>
