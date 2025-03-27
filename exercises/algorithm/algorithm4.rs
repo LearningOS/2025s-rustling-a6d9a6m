@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -50,26 +49,18 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        let node = Box::new(TreeNode::new(value));
-        if self.root.is_none() {
-            self.root = Some(node);
-
-        }else { self.root.insert(node); }
+        match &mut self.root {
+            Some(root) => root.insert(value),
+            None => self.root = Some(Box::new(TreeNode::new(value))),
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        let mut ptr = self.root.as_ref();
-        while let Some(node) = ptr {
-            if node.value == value {
-                return true;
-            }else if node.value < value {
-                ptr = node.right.as_ref();
-            }else {
-                ptr = node.left.as_ref();
-            }
+        match &self.root {
+            Some(root) => root.search(value),
+            None => false,
         }
-        false
     }
 }
 
@@ -79,23 +70,27 @@ where
 {
     // Insert a node into the tree
     pub fn insert(&mut self, value: T) {
-        if self.value > value{
-            let node = Box::new(TreeNode::new(value));
-            if self.left.is_none(){
-                self.left = Some(node);
-            }else {
-                self.left.insert(node);
+        if value < self.value {
+            match &mut self.left {
+                Some(left) => left.insert(value),
+                None => self.left = Some(Box::new(TreeNode::new(value))),
             }
-        }else {
-            let node = Box::new(TreeNode::new(value));
-            if self.right.is_none(){
-                self.right = Some(node);
-            }else {
-                self.right.insert(node);
+        } else {
+            match &mut self.right {
+                Some(right) => right.insert(value),
+                None => self.right = Some(Box::new(TreeNode::new(value))),
             }
         }
-        ()
 
+    }
+    pub fn search(&self, value: T) -> bool {
+        if self.value == value {
+            true
+        } else if value < self.value {
+            self.left.as_ref().map_or(false, |left| left.search(value))
+        } else {
+            self.right.as_ref().map_or(false, |right| right.search(value))
+        }
     }
 }
 
@@ -135,7 +130,6 @@ mod tests {
         let mut bst = BinarySearchTree::new();
 
         
-        bst.insert(1);
         bst.insert(1);
 
         

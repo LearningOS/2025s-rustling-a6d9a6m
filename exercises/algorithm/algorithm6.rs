@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic DFS traversal
 */
 
-// I AM NOT DONE
 use std::collections::HashSet;
 
 struct Graph {
@@ -26,11 +25,10 @@ impl Graph {
         if visited.contains(&v) {
             return;
         }
-        for edge in self.adj {
-            if v == edge[0] {
-                visited.insert(edge[0]);
-                self.dfs_util(edge[1], visited, visit_order);
-            }
+        visited.insert(v);
+        visit_order.push(v);
+        for &dest in &self.adj[v]{
+            self.dfs_util(dest, visited, visit_order);
         }
     }
 
